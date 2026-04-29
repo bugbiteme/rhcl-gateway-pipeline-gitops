@@ -23,17 +23,6 @@ spec:
           credentials:
             authorizationHeader:
               prefix: APIKEY
-          response:
-            unauthorized:
-              body:
-                value: |
-                  {
-                    "error": "Forbidden",
-                    "message": "Access denied by default by the application owner. If you are the administrator of the service, create a specific auth policy for the route."
-                  }
-              headers:
-                content-type:
-                  value: application/json
       response:
         success:
           filters:
