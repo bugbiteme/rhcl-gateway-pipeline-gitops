@@ -1,0 +1,16 @@
+apiVersion: sailoperator.io/v1
+kind: Istio
+metadata:
+  name: {{ .Values.istio.name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  version: {{ .Values.istio.version }}
+  namespace: {{ .Values.gateway.namespace }}
+  profile: {{ .Values.istio.profile }}
+  values:
+    meshConfig:
+      discoverySelectors:
+      - matchLabels:
+          istio-discovery: enabled

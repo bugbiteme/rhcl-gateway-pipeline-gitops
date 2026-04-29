@@ -1,8 +1,13 @@
+istio:
+  name: ingress-gateway
+  version: v1.27.3
+  profile: openshift
+
 gateway:
   namespace: ingress-gateway
   name: prod-gateway
   hostname: "*.demo.leonlevy.lol"
-  className: istio
+  className: ingress-gateway
 
 tls:
   issuerName: letsencrypt
