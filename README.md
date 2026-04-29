@@ -1,66 +1,130 @@
-Prereqs
+# RHCL Gateway Pipeline GitOps
 
-Operators installed:
-GitOps
-RHCL
+GitOps configuration for an Istio ingress gateway managed by [Kuadrant](https://kuadrant.io), deployed via OpenShift GitOps (ArgoCD).
 
-kuadrant-system is deployed
+---
 
-**Secret for Kuadrant DNS integration (`ingress-gateway` namespace)**
-(AWS Route 53 IAM Credentials)
+## Prerequisites
 
-   ```bash
-   oc -n ingress-gateway create secret generic aws-credentials \
-     --type=kuadrant.io/aws \
-     --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
-     --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY
-   ```
+### Operators
 
-**Secret for cert-manager (same credentials, `cert-manager` namespace)**
+The following operators must be installed on the cluster before deploying:
 
-   ```bash
-   oc -n cert-manager create secret generic aws-credentials \
-     --type=kuadrant.io/aws \
-     --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
-     --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY
-   ```
+- **OpenShift GitOps** — ArgoCD-based GitOps operator
+- **Red Hat Connectivity Link (RHCL)** — installs Kuadrant and its components (`kuadrant-system` namespace must be healthy)
 
-   ClusterIssuer has been created for letsencrypt
+### Credentials
 
-to test success
+Two Secrets must be created manually before ArgoCD syncs — they contain AWS IAM credentials and must **not** be committed to git.
+
+**Kuadrant DNS integration** (`ingress-gateway` namespace):
 ```bash
-export GATEWAY_IP=$(oc -n ingress-gateway get gateway prod-gateway -o jsonpath='{.status.addresses[*].value}')
-curl -v http://$GATEWAY_IP  
-``` 
+oc -n ingress-gateway create secret generic aws-credentials \
+  --type=kuadrant.io/aws \
+  --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
+  --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
+  --from-literal=AWS_REGION=us-east-1
+```
 
-or
+**cert-manager DNS-01 challenge** (`cert-manager` namespace):
 ```bash
+oc -n cert-manager create secret generic aws-credentials \
+  --type=kuadrant.io/aws \
+  --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
+  --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
+  --from-literal=AWS_REGION=us-east-1
+```
+
+A `letsencrypt` ClusterIssuer must also exist in the cluster before deploying.
+
+---
+
+## Deployment
+
+Apply the ArgoCD Applications from the `argocd/` directory:
+
+```bash
+oc apply -f argocd/application-gw.yaml      # Gateway, TLS, DNS, auth/rate-limit policies
+oc apply -f argocd/application-route.yaml   # Bookinfo test app + HTTPRoute
+```
+
+ArgoCD will sync both applications automatically. The gateway app uses sync waves to enforce order:
+
+| Wave | Resources |
+|------|-----------|
+| 0 | Namespace, RBAC |
+| 1 | Gateway, Telemetry, PodMonitor, TLSPolicy |
+| 3 | DNSPolicy |
+| 4 | AuthPolicy (deny-all default) |
+| 5 | RateLimitPolicy |
+
+---
+
+## Verification
+
+### 1. Gateway reachability
+
+Get the gateway's external IP and confirm it responds:
+
+```bash
+export GATEWAY_IP=$(oc -n ingress-gateway get gateway prod-gateway \
+  -o jsonpath='{.status.addresses[*].value}')
+
 curl -v -H "Host: demo.leonlevy.lol" http://$GATEWAY_IP
 ```
 
-Expect a 404 , which means the gateway is reachable
+A `404 Not Found` from `istio-envoy` confirms the gateway is reachable (no routes attached yet is expected at this stage):
 
 ```
-Host GATEWAY_IP:80 was resolved.
-* IPv6: (none)
-* IPv4: 3.13.235.136, 3.132.179.205
-*   Trying 3.13.235.136:80...
-* Connected to  GATEWAY_IP (3.13.235.136) port 80
-> GET / HTTP/1.1
-> Host:  GATEWAY_IP
-> User-Agent: curl/8.7.1
-> Accept: */*
-> 
-* Request completely sent off
 < HTTP/1.1 404 Not Found
-< date: Wed, 29 Apr 2026 22:48:34 GMT
 < server: istio-envoy
-< content-length: 0
-< 
-* Connection #0 to host  GATEWAY_IP left intact
+```
 
-DNS Resolution
+### 2. DNS resolution
+
+Confirm Route 53 records have been created:
 
 ```bash
 dig demo.leonlevy.lol
+```
+
+If DNS is not resolving, check the DNSPolicy and DNSRecord status:
+
+```bash
+oc get dnspolicy prod-gateway-dnspolicy -n ingress-gateway \
+  -o jsonpath='{.status.conditions}' | jq .
+
+oc get dnsrecord -n ingress-gateway
+```
+
+### 3. Test the bookinfo HTTPRoute with auth and rate limiting
+
+Get the hostname from the HTTPRoute:
+
+```bash
+export GATEWAY_URL=$(oc -n bookinfo get httproutes.gateway.networking.k8s.io bookinfo \
+  -o jsonpath='{.spec.hostnames[0]}')
+
+echo "Testing: https://${GATEWAY_URL}/api/v1/products/0/ratings"
+```
+
+**Valid user (alice) — authenticated, rate-limited to 2 req/10s:**
+```bash
+curl -k -so - -w "\n%{http_code}\n" \
+  "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
+  -H 'Authorization: APIKEY IAMALICE'
+```
+
+**Valid user (bob) — authenticated, higher rate limit of 20 req/10s:**
+```bash
+curl -k -so - -w "\n%{http_code}\n" \
+  "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
+  -H 'Authorization: APIKEY IAMBOB'
+```
+
+**Invalid key — expect `401 Unauthorized`:**
+```bash
+curl -k -so - -w "\n%{http_code}\n" \
+  "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
+  -H 'Authorization: APIKEY NOONE'
 ```
