@@ -4,5 +4,7 @@ metadata:
   name: {{ .Values.gateway.namespace }}
   labels:
     istio-discovery: enabled
+    istio.io/dataplane-mode: ambient
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/managed-by: openshift-gitops

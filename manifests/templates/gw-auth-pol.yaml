@@ -4,7 +4,7 @@ metadata:
   name: deny-all
   namespace: {{ .Values.gateway.namespace }}
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   targetRef:
     group: gateway.networking.k8s.io
