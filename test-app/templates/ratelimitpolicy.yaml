@@ -1,0 +1,26 @@
+apiVersion: kuadrant.io/v1
+kind: RateLimitPolicy
+metadata:
+  name: bookinfo-rlp
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: bookinfo
+  defaults:
+    limits:
+      "bob-limit":
+        rates:
+        - limit: {{ .Values.rateLimit.bob.limit }}
+          window: {{ .Values.rateLimit.bob.window }}
+        when:
+        - predicate: "auth.identity.userid == 'bob'"
+      "general-limit":
+        rates:
+        - limit: {{ .Values.rateLimit.general.limit }}
+          window: {{ .Values.rateLimit.general.window }}
+        when:
+        - predicate: "auth.identity.userid != 'bob'"

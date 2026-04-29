@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: details
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    networking.istio.io/exportTo: '*'
+  labels:
+    app: details
+    service: details
+spec:
+  ports:
+  - name: http
+    port: 9080
+  selector:
+    app: details
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    networking.istio.io/exportTo: '*'
+  labels:
+    app: productpage
+    service: productpage
+spec:
+  ports:
+  - name: http
+    port: 9080
+  selector:
+    app: productpage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratings
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    networking.istio.io/exportTo: '*'
+  labels:
+    app: ratings
+    service: ratings
+spec:
+  ports:
+  - name: http
+    port: 9080
+  selector:
+    app: ratings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    networking.istio.io/exportTo: '*'
+  labels:
+    app: reviews
+    service: reviews
+spec:
+  ports:
+  - name: http
+    port: 9080
+  selector:
+    app: reviews
