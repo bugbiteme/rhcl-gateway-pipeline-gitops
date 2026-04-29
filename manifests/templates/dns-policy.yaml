@@ -1,0 +1,18 @@
+apiVersion: kuadrant.io/v1
+kind: DNSPolicy
+metadata:
+  name: {{ .Values.gateway.name }}-dnspolicy
+  namespace: {{ .Values.gateway.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  loadBalancing:
+    defaultGeo: {{ .Values.dns.defaultGeo }}
+    geo: {{ .Values.dns.geo }}
+    weight: {{ .Values.dns.weight }}
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway.name }}
+  providerRefs:
+  - name: {{ .Values.dns.providerRef }}

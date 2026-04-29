@@ -1,0 +1,37 @@
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  name: deny-all
+  namespace: {{ .Values.gateway.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway.name }}
+  defaults:
+    strategy: atomic
+    when:
+    {{- range .Values.auth.excludePaths }}
+    - predicate: request.path != {{ . | quote }}
+    {{- end }}
+    rules:
+      authorization:
+        deny-all:
+          priority: 0
+          metrics: false
+          opa:
+            allValues: false
+            rego: allow = false
+      response:
+        unauthorized:
+          headers:
+            content-type:
+              value: application/json
+          body:
+            value: |
+              {
+                "error": "Forbidden",
+                "message": "Access denied by default by the gateway operator. If you are the administrator of the service, create a specific auth policy for the route."
+              }
