@@ -15,4 +15,4 @@ spec:
     kind: Gateway
     name: {{ .Values.gateway.name }}
   providerRefs:
-  - name: {{ .Values.dns.providerRef }}
+  - name: aws-credentials

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cluster-issuer
+description: cert-manager ClusterIssuer with Route53 DNS01 solver
+type: application
+version: 0.1.0

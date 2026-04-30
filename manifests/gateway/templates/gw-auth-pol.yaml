@@ -13,9 +13,7 @@ spec:
   defaults:
     strategy: atomic
     when:
-    {{- range .Values.auth.excludePaths }}
-    - predicate: request.path != {{ . | quote }}
-    {{- end }}
+    - predicate: request.path != "/health"
     rules:
       authorization:
         deny-all:

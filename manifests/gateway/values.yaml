@@ -6,27 +6,12 @@ gateway:
 
 tls:
   issuerName: letsencrypt
-  issuerKind: ClusterIssuer
-  issuerGroup: cert-manager.io
 
 dns:
   geo: GEO-NA
   weight: 120
   defaultGeo: true
-  providerRef: aws-credentials
-
-auth:
-  excludePaths:
-    - /health
 
 rateLimit:
   limit: 2
   window: 10s
-
-podmonitor:
-  meshId: ossm-3
-  interval: 30s
-
-externalSecret:
-  refreshInterval: 1h
-  secretStoreName: central-secret-store

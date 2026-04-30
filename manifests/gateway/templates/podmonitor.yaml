@@ -12,7 +12,7 @@ spec:
       operator: DoesNotExist
   podMetricsEndpoints:
   - path: /stats/prometheus
-    interval: {{ .Values.podmonitor.interval }}
+    interval: 30s
     relabelings:
     - action: keep
       sourceLabels: [__meta_kubernetes_pod_container_name]
@@ -45,5 +45,5 @@ spec:
       action: replace
       targetLabel: namespace
     - action: replace
-      replacement: {{ .Values.podmonitor.meshId | quote }}
+      replacement: "ossm-3"
       targetLabel: mesh_id

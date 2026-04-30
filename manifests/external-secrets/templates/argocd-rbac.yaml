@@ -29,5 +29,5 @@ roleRef:
   name: openshift-gitops-eso-manager
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.argocd.serviceAccountName }}
-    namespace: {{ .Values.argocd.namespace }}
+    name: openshift-gitops-argocd-application-controller
+    namespace: openshift-gitops

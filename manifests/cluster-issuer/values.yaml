@@ -1,0 +1,11 @@
+acme:
+  server: https://acme-staging-v02.api.letsencrypt.org/directory
+  email: demo@yourcompany.com
+
+route53:
+  region: us-east-1
+  hostedZoneID: Z04750902KLRBOAQR4XLK #change to your hosted zone id
+
+certManager:
+  namespace: cert-manager
+

@@ -4,6 +4,8 @@ GitOps configuration for an Istio ingress gateway managed by [Kuadrant](https://
 
 Steps:
 
+Preqeqs - Certificate issuer is set up with AWS secrets and  hosted zone ID
+
 create external-secret management resources
 (make sure they are set)
 ```bash

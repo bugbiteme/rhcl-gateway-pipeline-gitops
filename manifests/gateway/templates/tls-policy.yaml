@@ -11,6 +11,6 @@ spec:
     kind: Gateway
     name: {{ .Values.gateway.name }}
   issuerRef:
-    group: {{ .Values.tls.issuerGroup }}
-    kind: {{ .Values.tls.issuerKind }}
+    group: cert-manager.io
+    kind: ClusterIssuer
     name: {{ .Values.tls.issuerName }}
