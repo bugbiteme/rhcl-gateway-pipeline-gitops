@@ -4,10 +4,11 @@ metadata:
   name: {{ .Values.gateway.name }}
   namespace: {{ .Values.gateway.namespace }}
   labels:
-    app: {{ .Values.gateway.namespace }}
+    app: {{ .Values.gateway.name }}
     kuadrant.io/gateway: "true"
   annotations:
     argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   gatewayClassName: {{ .Values.gateway.className }}
   listeners:
