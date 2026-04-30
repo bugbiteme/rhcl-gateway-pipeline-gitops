@@ -2,6 +2,15 @@
 
 GitOps configuration for an Istio ingress gateway managed by [Kuadrant](https://kuadrant.io), deployed via OpenShift GitOps (ArgoCD).
 
+Steps:
+
+create external-secret management resources
+
+```bash
+oc apply -f argocd/app-external-secrets.yaml 
+```
+
+wait for arcgocd to fully sync `application.argoproj.io/external-secrets`
 ---
 
 ## Prerequisites
