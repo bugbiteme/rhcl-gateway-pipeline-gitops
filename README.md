@@ -27,6 +27,8 @@ oc create secret generic aws-credentials \
   --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
   -n secret-store
 ```
+Create cluster issues (update hosted zone ID in values.yaml)
+
 
 Create ingress-gateway with RHCL policies attached (DNS,TLS,Auth,RateLimit)
 

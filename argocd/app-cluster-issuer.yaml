@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-issuer
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bugbiteme/rhcl-gateway-pipeline-gitops.git
+    targetRevision: HEAD
+    path: manifests/cluster-issuer  
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
