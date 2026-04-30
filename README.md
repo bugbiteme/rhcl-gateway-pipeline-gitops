@@ -5,6 +5,10 @@ GitOps configuration for an Istio ingress gateway managed by [Kuadrant](https://
 Steps:
 
 create external-secret management resources
+(make sure they are set)
+```bash
+env | grep AWS  
+```
 
 ```bash
 oc apply -f argocd/app-external-secrets.yaml 
@@ -68,8 +72,36 @@ curl -k -so - -w "\n%{http_code}\n" \
   -H 'Authorization: APIKEY NOONE'
 ```
 
+Test RatelimitPolicy
+
+expect
+```
+429
+Too Many Requests
+```
+
+```bash
+for i in {1..5}
+do
+curl -k -so - -w "\n%{http_code}\n" \
+  "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
+  -H 'Authorization: APIKEY IAMALICE'
+done
+```
+See no error codes
+```bash
+for i in {1..5}
+do
+curl -k -so - -w "\n%{http_code}\n" \
+  "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
+  -H 'Authorization: APIKEY IAMBOB'
+done
+```
 
 If things get stuck
 kubectl patch namespace ingress-gateway -p '{"metadata":{"finalizers":null}}' --type merge
 
 oc patch app rhcl-gateway -n openshift-gitops -p '{"metadata":{"finalizers":null}}' --type merge
+
+flush cache (mac
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder)
