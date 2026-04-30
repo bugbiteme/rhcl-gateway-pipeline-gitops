@@ -1,0 +1,9 @@
+namespace: secret-store
+
+serviceAccount:
+  name: eso-reader
+
+secretStore:
+  name: central-secret-store
+  caConfigMap: kube-root-ca.crt
+  caKey: ca.crt
