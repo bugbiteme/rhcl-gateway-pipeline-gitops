@@ -11,6 +11,22 @@ oc apply -f argocd/app-external-secrets.yaml
 ```
 
 wait for arcgocd to fully sync `application.argoproj.io/external-secrets`
+
+Add AWS authentication secret to `secret-store` ns
+
+```bash
+oc create secret generic aws-credentials \
+  --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
+  --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
+  -n secret-store
+```
+
+Create ingress-gateway with RHCL policies attached (DNS,TLS,Auth,RateLimit)
+
+```bash
+oc apply -f argocd/app-gw.yaml    
+```
+
 ---
 
 ## Prerequisites
