@@ -7,3 +7,7 @@ secretStore:
   name: central-secret-store
   caConfigMap: kube-root-ca.crt
   caKey: ca.crt
+
+argocd:
+  namespace: openshift-gitops
+  serviceAccountName: openshift-gitops-argocd-application-controller
