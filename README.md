@@ -18,21 +18,16 @@ The following operators must be installed on the cluster before deploying:
 Two Secrets must be created manually before ArgoCD syncs — they contain AWS IAM credentials and must **not** be committed to git.
 
 **Kuadrant DNS integration** (`ingress-gateway` namespace):
-```bash
-oc -n ingress-gateway create secret generic aws-credentials \
-  --type=kuadrant.io/aws \
-  --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
-  --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
-  --from-literal=AWS_REGION=us-east-1
-```
+
 
 **cert-manager DNS-01 challenge** (`cert-manager` namespace):
+
+
 ```bash
-oc -n cert-manager create secret generic aws-credentials \
-  --type=kuadrant.io/aws \
+oc create secret generic aws-credentials \
   --from-literal=AWS_ACCESS_KEY_ID=$KUADRANT_AWS_ACCESS_KEY_ID \
   --from-literal=AWS_SECRET_ACCESS_KEY=$KUADRANT_AWS_SECRET_ACCESS_KEY \
-  --from-literal=AWS_REGION=us-east-1
+  -n secret-store
 ```
 
 A `letsencrypt` ClusterIssuer must also exist in the cluster before deploying.
@@ -128,3 +123,9 @@ curl -k -so - -w "\n%{http_code}\n" \
   "https://${GATEWAY_URL}/api/v1/products/0/ratings" \
   -H 'Authorization: APIKEY NOONE'
 ```
+
+
+If things get stuck
+kubectl patch namespace ingress-gateway -p '{"metadata":{"finalizers":null}}' --type merge
+
+oc patch app rhcl-gateway -n openshift-gitops -p '{"metadata":{"finalizers":null}}' --type merge

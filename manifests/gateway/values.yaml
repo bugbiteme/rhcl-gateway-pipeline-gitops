@@ -26,3 +26,7 @@ rateLimit:
 podmonitor:
   meshId: ossm-3
   interval: 30s
+
+externalSecret:
+  refreshInterval: 1h
+  secretStoreName: central-secret-store
