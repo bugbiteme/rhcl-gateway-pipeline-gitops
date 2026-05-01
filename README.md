@@ -29,6 +29,9 @@ oc create secret generic aws-credentials \
 ```
 Create cluster issues (update hosted zone ID in values.yaml)
 
+```bash
+oc apply -f argocd/app-cluster-issuer.yaml  
+```
 
 Create ingress-gateway with RHCL policies attached (DNS,TLS,Auth,RateLimit)
 
